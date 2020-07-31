@@ -18,14 +18,22 @@
 		flex-direction: column;*/
 	}
 
+	#editor-event-catcher {
+		width: 100%;
+		height: 100%;
+	}
+
 	#editor-canvas {
 		white-space: pre;
+
 		width: 100%;
 		height: 100%;
 		/*margin: 2px;
 		padding: 2px;*/
 		font-family: monospace;
 		font-size: 1.5rem;
+
+		pointer-events: none;
 	}
 
 	#editor-canvas:focus {
@@ -44,6 +52,31 @@
 		margin: 0;
 	}
 
+	#virtual-keyboard {
+		display: none;
+		position: fixed;
+		bottom: 0;
+		background-color: lightgrey;
+		width: 100vw;
+		height: 35vh;
+
+		grid-template-columns: repeat(10, 1fr);
+		grid-gap: 0;
+	}
+
+	.virtual-button {
+		max-height: 20%;
+		margin: 2px;
+		padding: 2px;
+		font-size: 1.7em;
+	}
+
+	.caret {
+		padding: 0;
+		margin: 0;
+		border: 0;
+	}
+
 	body {
 		padding: 0;
 		margin: 0;
@@ -56,8 +89,22 @@
 </style>
 
 <div id="container">
-	<div id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></div>
+	<div id="editor-event-catcher">
+		<div id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></div>	
+	</div>
 	<div id="keyboard-context-menu"></div>
+	<div id="virtual-keyboard">
+		<button class="virtual-button" onclick="insert('0'); updateHTML();">0</button>
+		<button class="virtual-button" onclick="insert('1'); updateHTML();">1</button>
+		<button class="virtual-button" onclick="insert('2'); updateHTML();">2</button>
+		<button class="virtual-button" onclick="insert('3'); updateHTML();">3</button>
+		<button class="virtual-button" onclick="insert('4'); updateHTML();">4</button>
+		<button class="virtual-button" onclick="insert('5'); updateHTML();">5</button>
+		<button class="virtual-button" onclick="insert('6'); updateHTML();">6</button>
+		<button class="virtual-button" onclick="insert('7'); updateHTML();">7</button>
+		<button class="virtual-button" onclick="insert('8'); updateHTML();">8</button>
+		<button class="virtual-button" onclick="insert('9'); updateHTML();">9</button>
+	</div>
 </div>
 
 <script type="text/javascript">
@@ -68,26 +115,104 @@ window.addEventListener('load', function() {
 	updateWindowSize();
 	window.topBarHeight = screen.height - window.innerHeight;
 	keyboardMenu = document.getElementById('keyboard-context-menu');
-	window.addEventListener('resize', resizeHandler);
+	// window.addEventListener('resize', resizeHandler);
 
 	let editorCanvas = document.getElementById('editor-canvas');
+	editorCanvas.hasVirtualFocus = false;
 
 	document.body.addEventListener('touchstart', function() {
 		console.log('touch');
 	});
 
-	editorCanvas.addEventListener('keydown', function(event) {
+	let virtualKeyboard = document.getElementById('virtual-keyboard');
+	let eventCatcher = document.getElementById('editor-event-catcher');
+
+	eventCatcher.addEventListener('click', function(event) {
+		if (!editorCanvas.hasVirtualFocus) {
+			editorCanvas.hasVirtualFocus = true;
+			virtualKeyboard.style.display = 'grid';
+			updateHTML();
+		}
+	});
+
+	window.addEventListener('keydown', function(event) {
+		if (!editorCanvas.hasVirtualFocus) {
+			return;
+		}
 		switch (event.keyCode) {
-		case 9: // TAB
+		case 9: // Tab
 			event.preventDefault();
-			insertText('    ');
+			insert('    ');
+			break;
+		case 13: // Enter
+			event.preventDefault();
+			insert('\n');
+			break;
+		case 8: // Backspace
+			event.preventDefault();
+			del();
+			break;
+		case 16: // Shift
+		case 17: // Control
+		case 18: // AltGraph
+			// do nothing
 			break;
 		default:
+			insert(event.key);
 			break;
 		}
 	});
 });
 
+//@NOTE: W.I.P. gap-buffer implementation
+class Buffer {
+	constructor(size) {
+		this.buf = new Uint8Array(size);
+		this.cursor = 0;
+		this.gapstart = 0;
+		this.gapend = size;
+		this.endpos = size;
+		this.encoder = new TextEncoder('utf-8');
+		this.decoder = new TextDecoder('utf-8');
+	}
+
+	insert(text) {
+		this.buf.set(this.encoder.encode(text), this.cursor);
+		this.cursor += text.length;
+		this.gapstart = this.cursor;
+	}
+
+	del() {
+		if (this.cursor == 0) {
+			return;
+		}
+		this.cursor--;
+		this.gapstart--;
+	}
+
+	textBeforeGap() {
+		return this.decoder.decode(this.buf.slice(0, this.gapstart));
+	}
+}
+
+var textBuffer = new Buffer(1024 * 100);
+
+function updateHTML() {
+	const elem = document.getElementById('editor-canvas'); 
+	elem.innerHTML = textBuffer.textBeforeGap() + '<span class="caret">|</span>';
+}
+
+function insert(text) {
+	textBuffer.insert(text);
+	updateHTML();
+}
+
+function del() {
+	textBuffer.del();
+	updateHTML();
+}
+
+/*
 function insertText(text) {
 	if (window.getSelection) {
 		let sel = window.getSelection();
@@ -104,6 +229,7 @@ function insertText(text) {
 		throw 'Could not insert text';
 	}
 }
+*/
 
 function resizeHandler() {
 	let kbHeight = detectKeyboard();
