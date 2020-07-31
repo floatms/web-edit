@@ -75,6 +75,11 @@
 		touch-action: manipulation;
 	}
 
+	.virtual-button:focus {
+		outline: none;
+		box-shadow: none;
+	}
+
 	.caret {
 		padding: 0;
 		margin: 0;
@@ -98,16 +103,16 @@
 	</div>
 	<div id="keyboard-context-menu"></div>
 	<div id="virtual-keyboard">
-		<button class="virtual-button" onclick="insert('0'); updateHTML();">0</button>
-		<button class="virtual-button" onclick="insert('1'); updateHTML();">1</button>
-		<button class="virtual-button" onclick="insert('2'); updateHTML();">2</button>
-		<button class="virtual-button" onclick="insert('3'); updateHTML();">3</button>
-		<button class="virtual-button" onclick="insert('4'); updateHTML();">4</button>
-		<button class="virtual-button" onclick="insert('5'); updateHTML();">5</button>
-		<button class="virtual-button" onclick="insert('6'); updateHTML();">6</button>
-		<button class="virtual-button" onclick="insert('7'); updateHTML();">7</button>
-		<button class="virtual-button" onclick="insert('8'); updateHTML();">8</button>
-		<button class="virtual-button" onclick="insert('9'); updateHTML();">9</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '0');">0</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '1');">1</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '2');">2</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '3');">3</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '4');">4</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '5');">5</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '6');">6</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '7');">7</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '8');">8</button>
+		<button class="virtual-button" onclick="virtualButtonHandler(this, '9');">9</button>
 	</div>
 </div>
 
@@ -216,24 +221,12 @@ function del() {
 	updateHTML();
 }
 
-/*
-function insertText(text) {
-	if (window.getSelection) {
-		let sel = window.getSelection();
-		if (sel.getRangeAt && sel.rangeCount) {
-			range = sel.getRangeAt(0);
-			range.deleteContents();
-			range.insertNode(document.createTextNode(text));
-		}
-		sel.collapseToEnd();
-	} else if (document.selection && document.selection.createRange) {
-		document.selection.createRange().text = text;
-		document.selection.collapseToEnd();
-	} else {
-		throw 'Could not insert text';
-	}
+function virtualButtonHandler(target, text) {
+	insert(text);
+	updateHTML();
+	window.navigator.vibrate(200);
+	target.blur();
 }
-*/
 
 function resizeHandler() {
 	let kbHeight = detectKeyboard();
@@ -286,7 +279,7 @@ function detectKeyboard() {
 	var keyboardHeight = 0;
 	updateWindowSize();
 	return keyboardHeight;
-};
+}
 
 </script>
 
