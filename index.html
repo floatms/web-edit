@@ -18,6 +18,7 @@
 	}
 
 	#editor-canvas {
+		white-space: pre;
 		width: 100%;
 		height: 100%;
 		margin: 2px;
@@ -31,11 +32,12 @@
 	}
 
 	#keyboard-context-menu {
+		display: none;
 		background-color: red;
 		height: 30px;
 		width: 100vw;
 		position: absolute;
-		display: none;
+		bottom: 0;
 	}
 
 	body {
@@ -67,11 +69,14 @@ window.addEventListener('load', function() {
 	});
 
 	editorCanvas.addEventListener('keydown', function(event) {
-		if (event.keyCode != 9 /*TAB*/) {
-			return;
+		switch (event.keyCode) {
+		case 9: // TAB
+			event.preventDefault();
+			insertText('    ');
+			break;
+		default:
+			break;
 		}
-		event.preventDefault();
-		insertText('    ');
 	});
 });
 
@@ -97,7 +102,7 @@ function resizeHandler() {
 	if (kbHeight > 0) {
 		console.log('Keyboard shown: ', kbHeight);
 		keyboardMenu.style.display = 'block';
-		keyboardMenu.style.bottom = kbHeight;
+		// keyboardMenu.style.bottom = kbHeight;
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
