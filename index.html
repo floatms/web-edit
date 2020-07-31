@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Mobile Editor</title>
+</head>
+<body>
+
+<style type="text/css">
+
+	#container {
+		width: 100vw;
+		height: 100vh;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		justify-content: flex-start;
+		flex-direction: column;
+	}
+
+	#editor-canvas {
+		width: 100%;
+		height: 100%;
+		margin: 2px;
+		padding: 2px;
+		font-family: monospace;
+		font-size: 1.5rem;
+	}
+
+	#editor-canvas:focus {
+		outline: 0;
+	}
+
+	#keyboard-context-menu {
+		background-color: red;
+		height: 30px;
+		width: 100vw;
+		position: absolute;
+		display: none;
+	}
+
+	body {
+		padding: 0;
+		margin: 0;
+	}
+
+</style>
+
+<div id="container">
+	<div id="editor-canvas" contenteditable="" spellcheck="false"></div>
+	<div id="keyboard-context-menu"></div>
+</div>
+
+<script type="text/javascript">
+
+let keyboardMenu;
+
+window.addEventListener('load', function() {
+	updateWindowSize();
+	window.topBarHeight = screen.height - window.innerHeight;
+	keyboardMenu = document.getElementById('keyboard-context-menu');
+	window.addEventListener('resize', resizeHandler);
+
+	let editorCanvas = document.getElementById('editor-canvas');
+
+	document.body.addEventListener('touchstart', function() {
+		console.log('touch');
+	});
+
+	editorCanvas.addEventListener('keydown', function(event) {
+		if (event.keyCode != 9 /*TAB*/) {
+			return;
+		}
+		event.preventDefault();
+		insertText('    ');
+	});
+});
+
+function insertText(text) {
+	if (window.getSelection) {
+		let sel = window.getSelection();
+		if (sel.getRangeAt && sel.rangeCount) {
+			range = sel.getRangeAt(0);
+			range.deleteContents();
+			range.insertNode(document.createTextNode(text));
+		}
+		sel.collapseToEnd();
+	} else if (document.selection && document.selection.createRange) {
+		document.selection.createRange().text = text;
+		document.selection.collapseToEnd();
+	} else {
+		throw 'Could not insert text';
+	}
+}
+
+function resizeHandler() {
+	let kbHeight = detectKeyboard();
+	if (kbHeight > 0) {
+		console.log('Keyboard shown: ', kbHeight);
+		keyboardMenu.style.display = 'block';
+		keyboardMenu.style.bottom = kbHeight;
+	} else if (kbHeight == -1) {
+		console.log('Keyboard hidden');
+		keyboardMenu.style.display = 'none';
+	}
+}
+
+function updateWindowSize() {
+	window.lastInnerWidth = window.innerWidth;
+	window.lastInnerHeight = window.innerHeight;
+	window.lastOrientation = window.orientation;
+	window.lastBodyHeight = document.body.clientHeight;
+};
+
+function detectKeyboard() {
+	function orientationChange() {
+		if ( ((window.lastOrientation == 0 || window.lastOrientation == 180) && (window.orientation == 0 || window.orientation == 180)) || ((window.lastOrientation == 90 || window.lastOrientation == -90) && (window.orientation == 90 || window.orientation == -90)) ) return false
+		else return true;
+	}
+	
+	// No orientation change, keyboard opening
+	if ( (window.lastInnerHeight - window.innerHeight > 150 ) && window.innerWidth == window.lastInnerWidth ) {
+		var keyboardHeight = window.lastInnerHeight - window.innerHeight;
+		updateWindowSize();
+		return keyboardHeight;
+	}
+	// Orientation change with keyboard already opened
+	if ( orientationChange() && document.body.classList.contains("keyboard-open") ) {
+		var keyboardHeight = screen.height - window.topBarHeight - window.innerHeight;
+		updateWindowSize();
+		return keyboardHeight;
+	}
+	
+	// No orientation change, keyboard closing
+	if ( (window.innerHeight - window.lastInnerHeight > 150 ) && window.innerWidth == window.lastInnerWidth) {
+		var keyboardHeight = -1;
+		updateWindowSize();
+		return keyboardHeight;
+		
+	} 
+	
+	// Orientation change or regular resize, no keyboard action
+	var keyboardHeight = 0;
+	updateWindowSize();
+	return keyboardHeight;
+};
+
+</script>
+
+
+</body>
+</html>
