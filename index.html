@@ -37,7 +37,7 @@
 		background-color: red;
 		height: 30px;
 		width: 100%;
-		position: fixed;
+		position: absolute;
 		bottom: 0;
 		left: 0;
 		padding: 0;
@@ -106,8 +106,8 @@ function resizeHandler() {
 	if (kbHeight > 0) {
 		console.log('Keyboard shown: ', kbHeight);
 		keyboardMenu.style.display = 'block';
-		// insertText(kbHeight.toString());
-		// keyboardMenu.style.bottom = `${kbHeight}px`;
+		insertText(`${kbHeight} ${window.innerHeight}`);
+		keyboardMenu.style.top = `${kbHeight}px`;
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
