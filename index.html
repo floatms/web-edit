@@ -33,14 +33,13 @@
 	}
 
 	#keyboard-context-menu {
-		/*display: none;*/
+		display: none;
 		background-color: red;
 		height: 30px;
 		width: 100%;
-		position: absolute;
+		position: fixed;
 		bottom: 0;
 		left: 0;
-		right: 0;
 		padding: 0;
 		margin: 0;
 	}
@@ -53,7 +52,7 @@
 </style>
 
 <div id="container">
-	<div id="editor-canvas" contenteditable="" spellcheck="false"></div>
+	<div id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></div>
 	<div id="keyboard-context-menu"></div>
 </div>
 
@@ -107,8 +106,8 @@ function resizeHandler() {
 	if (kbHeight > 0) {
 		console.log('Keyboard shown: ', kbHeight);
 		keyboardMenu.style.display = 'block';
-		insertText(kbHeight.toString());
-		keyboardMenu.style.bottom = `${kbHeight}px`;
+		// insertText(kbHeight.toString());
+		// keyboardMenu.style.bottom = `${kbHeight}px`;
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
