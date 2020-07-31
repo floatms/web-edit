@@ -221,10 +221,13 @@ function del() {
 	updateHTML();
 }
 
+//@TODO: window.navigator.vibrate only works when sound settings of phone
+// are set to vibrate at least. Haptic button feedback seems to be something else
+// entirely.
 function virtualButtonHandler(target, text) {
 	insert(text);
 	updateHTML();
-	window.navigator.vibrate(200);
+	window.navigator.vibrate(20);
 	target.blur();
 }
 
