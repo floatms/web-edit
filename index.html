@@ -102,7 +102,8 @@ function resizeHandler() {
 	if (kbHeight > 0) {
 		console.log('Keyboard shown: ', kbHeight);
 		keyboardMenu.style.display = 'block';
-		// keyboardMenu.style.bottom = kbHeight;
+		insertText(keyboardHeight.toString());
+		keyboardMenu.style.bottom = `${kbHeight}px`;
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
