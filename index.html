@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Mobile Editor</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height">
+	<title>Web Editor</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, height=device-height">
 </head>
 <body>
 
@@ -10,7 +10,7 @@
 
 	#container {
 		position: relative;
-		width: 100%;
+		width: 100vw;
 		height: 100%;
 		padding: 0;
 		margin: 0;
@@ -32,7 +32,11 @@
 		/*margin: 2px;
 		padding: 2px;*/
 		font-family: monospace;
-		font-size: 1.5rem;
+		font-size: 1.25rem;
+
+		white-space: pre-wrap;
+		overflow: hidden;
+		text-overflow: clip;
 
 		/*pointer-events: none;*/
 	}
@@ -44,13 +48,18 @@
 	#keyboard-context-menu {
 		display: none;
 		background-color: red;
-		height: 30px;
+		height: 7vh;
 		width: 100%;
 		position: fixed;
 		bottom: 0;
 		left: 0;
 		padding: 0;
 		margin: 0;
+	}
+
+	#keyboard-context-menu:active {
+		display: flex;
+		flex-direction: row;
 	}
 
 	#virtual-keyboard {
@@ -103,7 +112,9 @@
 	<div id="editor-event-catcher">
 		<div id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></div>	
 	</div>
-	<div id="keyboard-context-menu"></div>
+	<div id="keyboard-context-menu">
+		<button id='tab-button' style='width: 20%;'>TAB</button>
+	</div>
 	<div id="virtual-keyboard">
 		<button class="virtual-button" onclick="virtualButtonHandler(this, '0');">0</button>
 		<button class="virtual-button" onclick="virtualButtonHandler(this, '1');">1</button>
@@ -128,11 +139,10 @@ window.addEventListener('load', function() {
 	updateWindowSize();
 	window.topBarHeight = screen.height - window.innerHeight;
 	keyboardMenu = document.getElementById('keyboard-context-menu');
-	 window.addEventListener('resize', resizeHandler);
+	window.addEventListener('resize', resizeHandler);
 
 	let editorCanvas = document.getElementById('editor-canvas');
 	editorCanvas.hasVirtualFocus = false;
-
 	
 	// let virtualKeyboard = document.getElementById('virtual-keyboard');
 	let eventCatcher = document.getElementById('editor-event-catcher');
@@ -146,6 +156,22 @@ window.addEventListener('load', function() {
 		}
 	});
 	*/
+
+	document.getElementById('tab-button').addEventListener('pointerdown', function(event) {
+		event.preventDefault();
+		insertTextAtSelection('    ');
+	});
+
+	editorCanvas.addEventListener('keydown', function(event) {
+		switch (event.keyCode) {
+		case 9: // Tab
+			event.preventDefault();
+			insertTextAtSelection('    ');
+			break;
+		default:
+			break;
+		}
+	});
 
 	window.addEventListener('keydown', function(event) {
 		if (!editorCanvas.hasVirtualFocus) {
@@ -226,6 +252,21 @@ function del() {
 	updateHTML();
 }
 
+// Contenteditable div impl
+function insertTextAtSelection(text) {
+	if (window.getSelection) {
+		let sel = window.getSelection();
+		if (sel.getRangeAt && sel.rangeCount) {
+			let range = sel.getRangeAt(0);
+			range.deleteContents();
+			range.insertNode(document.createTextNode(text));
+		}
+		sel.collapseToEnd();
+	} else if (document.selection && document.selection.createRange) {
+		document.selection.createRange().text = text;
+	}
+}
+
 //@TODO: window.navigator.vibrate only works when sound settings of phone
 // are set to vibrate at least. Haptic button feedback seems to be something else
 // entirely.
@@ -239,11 +280,13 @@ function resizeHandler() {
 	let kbHeight = detectKeyboard();
 	if (kbHeight > 0) {
 		console.log('Keyboard shown: ', kbHeight);
-		keyboardMenu.style.display = 'block';
+		keyboardMenu.style.display = 'flex';
+		// keyboardMenu.classList.add('keyboard-context-menu:active');
 		// keyboardMenu.style.bottom = `${kbHeight}px`;
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
+		// keyboardMenu.classList.remove('keyboard-context-menu:active');
 	}
 }
 
