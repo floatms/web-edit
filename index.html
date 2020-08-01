@@ -32,11 +32,16 @@
 		/*margin: 2px;
 		padding: 2px;*/
 		font-family: monospace;
-		font-size: 1.25rem;
+		/*@TODO: Customizable font size */
+		font-size: 1.1em; /* 1.25rem */
 
 		white-space: pre-wrap;
 		overflow: hidden;
 		text-overflow: clip;
+
+		padding: 4px;
+		padding-left: 6px;
+		padding-top: 10px;
 
 		/*pointer-events: none;*/
 	}
@@ -114,6 +119,11 @@
 	</div>
 	<div id="keyboard-context-menu">
 		<button id='tab-button' style='width: 20%;'>TAB</button>
+		<button id='open-brace-button' style='width: 10%;'>{</button>
+		<button id='close-brace-button' style='width: 10%;'>}</button>
+		<button id='open-paren-button' style='width: 10%;'>(</button>
+		<button id='close-paren-button' style='width: 10%;'>)</button>
+		<button id='semicolon-button' style='width: 10%;'>;</button>
 	</div>
 	<div id="virtual-keyboard">
 		<button class="virtual-button" onclick="virtualButtonHandler(this, '0');">0</button>
@@ -157,10 +167,49 @@ window.addEventListener('load', function() {
 	});
 	*/
 
-	document.getElementById('tab-button').addEventListener('pointerdown', function(event) {
+	document.getElementById('keyboard-context-menu').addEventListener('pointerdown', function(event) {
 		event.preventDefault();
-		insertTextAtSelection('    ');
 	});
+
+	// Keyboard menu buttons
+	//@TODO: Refactor. Extract common code and reduce.
+	{
+		document.getElementById('tab-button').addEventListener('pointerdown', function(event) {
+			event.preventDefault();
+			window.navigator.vibrate(3);
+			insertTextAtSelection('    ');
+		});
+
+		document.getElementById('open-brace-button').addEventListener('pointerdown', function(event) {
+			event.preventDefault();
+			window.navigator.vibrate(3);
+			insertTextAtSelection('{');
+		});
+
+		document.getElementById('close-brace-button').addEventListener('pointerdown', function(event) {
+			event.preventDefault();
+			window.navigator.vibrate(3);
+			insertTextAtSelection('}');
+		});
+
+		document.getElementById('open-paren-button').addEventListener('pointerdown', function(event) {
+			event.preventDefault();
+			window.navigator.vibrate(3);
+			insertTextAtSelection('(');
+		});
+
+		document.getElementById('close-paren-button').addEventListener('pointerdown', function(event) {
+			event.preventDefault();
+			window.navigator.vibrate(3);
+			insertTextAtSelection(')');
+		});
+
+		document.getElementById('semicolon-button').addEventListener('pointerdown', function(event) {
+			event.preventDefault();
+			window.navigator.vibrate(3);
+			insertTextAtSelection(';');
+		});
+	}
 
 	editorCanvas.addEventListener('keydown', function(event) {
 		switch (event.keyCode) {
@@ -277,12 +326,17 @@ function virtualButtonHandler(target, text) {
 }
 
 function resizeHandler() {
+
 	let kbHeight = detectKeyboard();
 	if (kbHeight > 0) {
 		console.log('Keyboard shown: ', kbHeight);
 		keyboardMenu.style.display = 'flex';
 		// keyboardMenu.classList.add('keyboard-context-menu:active');
 		// keyboardMenu.style.bottom = `${kbHeight}px`;
+
+		if (!document.fullScreenElement) {
+			document.documentElement.requestFullscreen();
+		}
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
