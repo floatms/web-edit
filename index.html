@@ -33,7 +33,7 @@
 		font-family: monospace;
 		font-size: 1.5rem;
 
-		pointer-events: none;
+		/*pointer-events: none;*/
 	}
 
 	#editor-canvas:focus {
@@ -133,6 +133,7 @@ window.addEventListener('load', function() {
 	// let virtualKeyboard = document.getElementById('virtual-keyboard');
 	let eventCatcher = document.getElementById('editor-event-catcher');
 
+	/*
 	eventCatcher.addEventListener('click', function(event) {
 		if (!editorCanvas.hasVirtualFocus) {
 			editorCanvas.hasVirtualFocus = true;
@@ -140,6 +141,7 @@ window.addEventListener('load', function() {
 			updateHTML();
 		}
 	});
+	*/
 
 	window.addEventListener('keydown', function(event) {
 		if (!editorCanvas.hasVirtualFocus) {
