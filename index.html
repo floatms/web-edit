@@ -124,22 +124,19 @@ window.addEventListener('load', function() {
 	updateWindowSize();
 	window.topBarHeight = screen.height - window.innerHeight;
 	keyboardMenu = document.getElementById('keyboard-context-menu');
-	// window.addEventListener('resize', resizeHandler);
+	 window.addEventListener('resize', resizeHandler);
 
 	let editorCanvas = document.getElementById('editor-canvas');
 	editorCanvas.hasVirtualFocus = false;
 
-	document.body.addEventListener('touchstart', function() {
-		console.log('touch');
-	});
-
-	let virtualKeyboard = document.getElementById('virtual-keyboard');
+	
+	// let virtualKeyboard = document.getElementById('virtual-keyboard');
 	let eventCatcher = document.getElementById('editor-event-catcher');
 
 	eventCatcher.addEventListener('click', function(event) {
 		if (!editorCanvas.hasVirtualFocus) {
 			editorCanvas.hasVirtualFocus = true;
-			virtualKeyboard.style.display = 'grid';
+			// virtualKeyboard.style.display = 'grid';
 			updateHTML();
 		}
 	});
@@ -148,6 +145,7 @@ window.addEventListener('load', function() {
 		if (!editorCanvas.hasVirtualFocus) {
 			return;
 		}
+		
 		switch (event.keyCode) {
 		case 9: // Tab
 			event.preventDefault();
@@ -167,6 +165,7 @@ window.addEventListener('load', function() {
 			// do nothing
 			break;
 		default:
+			// event.preventDefault();
 			insert(event.key);
 			break;
 		}
@@ -226,8 +225,7 @@ function del() {
 // entirely.
 function virtualButtonHandler(target, text) {
 	insert(text);
-	updateHTML();
-	window.navigator.vibrate(20);
+	window.navigator.vibrate(1);
 	target.blur();
 }
 
@@ -236,8 +234,7 @@ function resizeHandler() {
 	if (kbHeight > 0) {
 		console.log('Keyboard shown: ', kbHeight);
 		keyboardMenu.style.display = 'block';
-		insertText(`${kbHeight} ${window.innerHeight}`);
-		keyboardMenu.style.bottom = `${kbHeight}px`;
+		// keyboardMenu.style.bottom = `${kbHeight}px`;
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
