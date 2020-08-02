@@ -264,6 +264,13 @@ window.addEventListener('load', function() {
 				selectModeActive = !selectModeActive;
 			}
 			break;
+		case 'b':
+			if (cmdModeActive) {
+				document.execCommand('delete');
+				moveCursor('left', 'word', true);
+				document.execCommand('delete');
+			}
+			break;
 		case ' ':
 			if (cmdModeActive) {
 				toggleCmdMode();
