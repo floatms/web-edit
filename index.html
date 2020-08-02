@@ -53,7 +53,7 @@
 	#keyboard-context-menu {
 		display: none;
 		background-color: red;
-		height: 7vh;
+		height: 9vh;
 		width: 100%;
 		position: fixed;
 		bottom: 0;
@@ -95,6 +95,11 @@
 		box-shadow: none;
 	}
 
+	.cmd-mode-active {
+		background-color: lightblue;
+		color: white;
+	}
+
 	.caret {
 		padding: 0;
 		margin: 0;
@@ -124,6 +129,8 @@
 		<button id='open-paren-button' style='width: 10%;'>(</button>
 		<button id='close-paren-button' style='width: 10%;'>)</button>
 		<button id='semicolon-button' style='width: 10%;'>;</button>
+		<button id='fullscreen-button' style='width: 12%;'>full</button>
+		<button id='cmd-mode-button' style='width: 100%'>CMD-MODE</button>
 	</div>
 	<div id="virtual-keyboard">
 		<button class="virtual-button" onclick="virtualButtonHandler(this, '0');">0</button>
@@ -171,51 +178,118 @@ window.addEventListener('load', function() {
 		event.preventDefault();
 	});
 
-	// Keyboard menu buttons
-	//@TODO: Refactor. Extract common code and reduce.
+	// Keyboard menu-bar buttons
 	{
-		document.getElementById('tab-button').addEventListener('pointerdown', function(event) {
-			event.preventDefault();
-			window.navigator.vibrate(3);
-			insertTextAtSelection('    ');
-		});
+		const buttons = [
+			{id: 'tab-button', action: () => insertTextAtSelection('    ')},
+			{id: 'open-brace-button', action: () => insertTextAtSelection('{')},
+			{id: 'close-brace-button', action: () => insertTextAtSelection('}')},
+			{id: 'open-paren-button', action: () => insertTextAtSelection('(')},
+			{id: 'close-paren-button', action: () => insertTextAtSelection(')')},
+			{id: 'semicolon-button', action: () => insertTextAtSelection(';')},
+			{id: 'fullscreen-button', action: () => {
+				if (!document.fullScreenElement) {
+					document.documentElement.requestFullscreen();
+				} else {
+					if (document.exitFullscreen) {
+						document.exitFullscreen();
+					}
+				}
+			}},
+			{id: 'cmd-mode-button', action: () => {
+				toggleCmdMode();
+				console.log('cmd mode active:', cmdModeActive ? 'true' : 'false');
+			}},
+		];
 
-		document.getElementById('open-brace-button').addEventListener('pointerdown', function(event) {
-			event.preventDefault();
-			window.navigator.vibrate(3);
-			insertTextAtSelection('{');
-		});
+		for (const btn of buttons) {
+			document.getElementById(btn.id).addEventListener('pointerdown', function(event) {
+				event.preventDefault();
+				window.navigator.vibrate(3);
+				btn.action(event);
+			});
+		}
 
-		document.getElementById('close-brace-button').addEventListener('pointerdown', function(event) {
-			event.preventDefault();
-			window.navigator.vibrate(3);
-			insertTextAtSelection('}');
-		});
-
-		document.getElementById('open-paren-button').addEventListener('pointerdown', function(event) {
-			event.preventDefault();
-			window.navigator.vibrate(3);
-			insertTextAtSelection('(');
-		});
-
-		document.getElementById('close-paren-button').addEventListener('pointerdown', function(event) {
-			event.preventDefault();
-			window.navigator.vibrate(3);
-			insertTextAtSelection(')');
-		});
-
-		document.getElementById('semicolon-button').addEventListener('pointerdown', function(event) {
-			event.preventDefault();
-			window.navigator.vibrate(3);
-			insertTextAtSelection(';');
+		document.getElementById('cmd-mode-button').addEventListener('pointerdown', function(event) {
+			if (cmdModeActive) {
+				event.target.className += ' cmd-mode-active';
+			} else {
+				event.target.className = event.target.className.replace(' cmd-mode-active', '');
+			}
 		});
 	}
+
+	//@TODO: Keydown event doesn't work on mobile. Therefore we are forced to split the event handler.
+	// This is stupid though. Document.execCommand('undo') instead of event.preventDefault()? Really?
+	// I can't believe that this is the only working solution.
+	// Try to find something sane instead.
+	editorCanvas.addEventListener('input', function(event) {
+		switch (event.data) {
+		case 'j':
+			console.log(cmdModeActive);
+			if (cmdModeActive) {
+				document.execCommand('undo');
+				moveCursor(
+					'left',
+					wordModeActive ? 'word' : 'character',
+					event.shiftKey || selectModeActive,
+				);
+			}
+			break;
+		case 'l':
+			if (cmdModeActive) {
+				document.execCommand('undo');
+				moveCursor(
+					'right', 
+					wordModeActive ? 'word' : 'character',
+					event.shiftKey || selectModeActive,
+				);
+			}
+			break;
+		case 'o':
+			if (cmdModeActive) {
+				document.execCommand('undo');
+				moveCursor('right', 'line', event.shiftKey || selectModeActive);
+			}
+			break;
+		case 'u':
+			if (cmdModeActive) {
+				document.execCommand('undo');
+				moveCursor('left', 'line', event.shiftKey || selectModeActive);
+			}
+			break;
+		case 'w':
+			if (cmdModeActive) {
+				document.execCommand('undo');
+				wordModeActive = !wordModeActive;
+			}
+			break;
+		case 's':
+			if (cmdModeActive) {
+				document.execCommand('undo');
+				selectModeActive = !selectModeActive;
+			}
+			break;
+		case ' ':
+			if (cmdModeActive) {
+				toggleCmdMode();
+			}
+			break;
+		default: 
+			break;
+		}
+	});
 
 	editorCanvas.addEventListener('keydown', function(event) {
 		switch (event.keyCode) {
 		case 9: // Tab
 			event.preventDefault();
-			insertTextAtSelection('    ');
+			if (event.shiftKey) {
+				toggleCmdMode();
+				console.log('cmdModeActive:', cmdModeActive ? 'true' : 'false');
+			} else {
+				insertTextAtSelection('    ');
+			}
 			break;
 		default:
 			break;
@@ -252,6 +326,33 @@ window.addEventListener('load', function() {
 		}
 	});
 });
+
+var cmdModeActive = false;
+var wordModeActive = false;
+var selectModeActive = false;
+
+function toggleCmdMode() {
+	cmdModeActive = !cmdModeActive;
+	if (!cmdModeActive) {
+		wordModeActive = false;
+	}
+}
+
+//@TODO: punctuation
+function isprint(c) {
+	if (c.length > 0) {
+		return false;
+	}
+	return isalpha(c) || isdigit(c) || c == ' ' || c == '_';
+}
+
+function isalpha(c) {
+	return c.length == 1 && (('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z'));
+}
+
+function isdigit(c) {
+	return c.length == 1 && ('0' <= c && c <= '9');
+}
 
 //@NOTE: W.I.P. gap-buffer implementation
 class Buffer {
@@ -316,6 +417,34 @@ function insertTextAtSelection(text) {
 	}
 }
 
+function moveCursorLeft() {
+	moveCursor('left', 'character');
+}
+
+function moveCursorRight() {
+	moveCursor('right', 'character');
+}
+
+function moveCursorLeftWord() {
+	moveCursor('left', 'word');
+}
+
+function moveCursorRightWord() {
+	moveCursor('right', 'word');
+}
+
+function moveCursor(direction, granularity, extend=false) {
+	if (window.getSelection) {
+		let sel = window.getSelection();
+		let range = sel.getRangeAt(0);
+		if (range.collapsed && !extend) {
+			sel.modify('move', direction, granularity);
+		} else {
+			sel.modify('extend', direction, granularity);
+		}
+	}
+}
+
 //@TODO: window.navigator.vibrate only works when sound settings of phone
 // are set to vibrate at least. Haptic button feedback seems to be something else
 // entirely.
@@ -333,10 +462,6 @@ function resizeHandler() {
 		keyboardMenu.style.display = 'flex';
 		// keyboardMenu.classList.add('keyboard-context-menu:active');
 		// keyboardMenu.style.bottom = `${kbHeight}px`;
-
-		if (!document.fullScreenElement) {
-			document.documentElement.requestFullscreen();
-		}
 	} else if (kbHeight == -1) {
 		console.log('Keyboard hidden');
 		keyboardMenu.style.display = 'none';
