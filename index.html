@@ -214,7 +214,7 @@ window.addEventListener('load', function() {
 	cmdButton = document.getElementById('cmd-mode-button');
 
 	//@TODO: Keydown event doesn't work on mobile. Therefore we are forced to split the event handler.
-	// This is stupid though. Document.execCommand('undo') instead of event.preventDefault()? Really?
+	// This is stupid though. Document.execCommand('delete'); instead of event.preventDefault()? Really?
 	// I can't believe that this is the only working solution.
 	// Try to find something sane instead.
 	editorCanvas.addEventListener('input', function(event) {
@@ -222,7 +222,7 @@ window.addEventListener('load', function() {
 		case 'j':
 			console.log(cmdModeActive);
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				document.execCommand('delete');
 				moveCursor(
 					'left',
 					wordModeActive ? 'word' : 'character',
@@ -232,7 +232,7 @@ window.addEventListener('load', function() {
 			break;
 		case 'l':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				document.execCommand('delete');
 				moveCursor(
 					'right', 
 					wordModeActive ? 'word' : 'character',
@@ -242,25 +242,25 @@ window.addEventListener('load', function() {
 			break;
 		case 'o':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				document.execCommand('delete');
 				moveCursor('right', 'line', event.shiftKey || selectModeActive);
 			}
 			break;
 		case 'u':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				document.execCommand('delete');
 				moveCursor('left', 'line', event.shiftKey || selectModeActive);
 			}
 			break;
 		case 'w':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				document.execCommand('delete');
 				wordModeActive = !wordModeActive;
 			}
 			break;
 		case 's':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				document.execCommand('delete');
 				selectModeActive = !selectModeActive;
 			}
 			break;
