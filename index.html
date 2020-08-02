@@ -209,15 +209,9 @@ window.addEventListener('load', function() {
 				btn.action(event);
 			});
 		}
-
-		document.getElementById('cmd-mode-button').addEventListener('pointerdown', function(event) {
-			if (cmdModeActive) {
-				event.target.className += ' cmd-mode-active';
-			} else {
-				event.target.className = event.target.className.replace(' cmd-mode-active', '');
-			}
-		});
 	}
+
+	cmdButton = document.getElementById('cmd-mode-button');
 
 	//@TODO: Keydown event doesn't work on mobile. Therefore we are forced to split the event handler.
 	// This is stupid though. Document.execCommand('undo') instead of event.preventDefault()? Really?
@@ -331,10 +325,16 @@ var cmdModeActive = false;
 var wordModeActive = false;
 var selectModeActive = false;
 
+var cmdButton;
+
 function toggleCmdMode() {
 	cmdModeActive = !cmdModeActive;
-	if (!cmdModeActive) {
+	if (cmdModeActive) {
+		cmdButton.className += ' cmd-mode-active';
+	} else {
 		wordModeActive = false;
+		selectModeActive = false;
+		cmdButton.className = event.target.className.replace(' cmd-mode-active', '');
 	}
 }
 
