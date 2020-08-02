@@ -222,7 +222,7 @@ window.addEventListener('load', function() {
 		case 'j':
 			console.log(cmdModeActive);
 			if (cmdModeActive) {
-				document.execCommand('delete');
+				document.execCommand('undo');
 				moveCursor(
 					'left',
 					wordModeActive ? 'word' : 'character',
@@ -232,7 +232,7 @@ window.addEventListener('load', function() {
 			break;
 		case 'l':
 			if (cmdModeActive) {
-				document.execCommand('delete');
+				document.execCommand('undo');
 				moveCursor(
 					'right', 
 					wordModeActive ? 'word' : 'character',
@@ -242,25 +242,25 @@ window.addEventListener('load', function() {
 			break;
 		case 'o':
 			if (cmdModeActive) {
-				document.execCommand('delete');
+				document.execCommand('undo');
 				moveCursor('right', 'line', event.shiftKey || selectModeActive);
 			}
 			break;
 		case 'u':
 			if (cmdModeActive) {
-				document.execCommand('delete');
+				document.execCommand('undo');
 				moveCursor('left', 'line', event.shiftKey || selectModeActive);
 			}
 			break;
 		case 'w':
 			if (cmdModeActive) {
-				document.execCommand('delete');
+				document.execCommand('undo');
 				wordModeActive = !wordModeActive;
 			}
 			break;
 		case 's':
 			if (cmdModeActive) {
-				document.execCommand('delete');
+				document.execCommand('undo');
 				selectModeActive = !selectModeActive;
 			}
 			break;
