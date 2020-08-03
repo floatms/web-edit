@@ -297,6 +297,41 @@ window.addEventListener('load', function() {
 				}
 			}
 			break;
+		case 'c':
+			if (cmdModeActive) {
+				event.preventDefault();
+				let sel = window.getSelection();
+				let range = sel.getRangeAt(0);
+				if (!range.collapsed) {
+					document.execCommand('copy');
+					statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
+						${selectModeActive && wordModeActive ? ' ' : ''}
+						${wordModeActive ? 'Word' : ''}: Copy`;
+				}
+			}
+			break;
+		case 'v':
+			if (cmdModeActive) {
+				event.preventDefault();
+				document.execCommand('paste');
+				statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
+				${selectModeActive && wordModeActive ? ' ' : ''}
+				${wordModeActive ? 'Word' : ''}: Paste`;
+			}
+			break;
+		case 'x':
+			if (cmdModeActive) {
+				event.preventDefault();
+				let sel = window.getSelection();
+				let range = sel.getRangeAt(0);
+				if (!range.collapsed) {
+					document.execCommand('cut');
+					statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
+						${selectModeActive && wordModeActive ? ' ' : ''}
+						${wordModeActive ? 'Word' : ''}: Paste`;
+				}
+			}
+			break;
 		case 'b':
 			if (cmdModeActive) {
 				event.preventDefault();
