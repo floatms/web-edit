@@ -52,19 +52,34 @@
 
 	#keyboard-context-menu {
 		display: none;
-		background-color: red;
-		height: 9vh;
+		background-color: lightgrey;
+		height: 15vh;
 		width: 100%;
 		position: fixed;
 		bottom: 0;
 		left: 0;
 		padding: 0;
 		margin: 0;
+
+		flex-direction: column;
 	}
 
-	#keyboard-context-menu:active {
+	.keyboard-menu-buttons {
 		display: flex;
 		flex-direction: row;
+		width: 100%;
+		height: 9vh;
+	}
+
+	#status-bar {
+		width: 100%; 
+		height: 6vh; 
+		background-color: black;
+		color: white;
+		padding-left: 10px;
+
+		display: flex;
+		align-items: center;
 	}
 
 	#virtual-keyboard {
@@ -123,14 +138,17 @@
 		<div id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></div>	
 	</div>
 	<div id="keyboard-context-menu">
-		<button id='tab-button' style='width: 20%;'>TAB</button>
-		<button id='open-brace-button' style='width: 10%;'>{</button>
-		<button id='close-brace-button' style='width: 10%;'>}</button>
-		<button id='open-paren-button' style='width: 10%;'>(</button>
-		<button id='close-paren-button' style='width: 10%;'>)</button>
-		<button id='semicolon-button' style='width: 10%;'>;</button>
-		<button id='fullscreen-button' style='width: 12%;'>full</button>
-		<button id='cmd-mode-button' style='width: 100%'>CMD-MODE</button>
+		<div id="status-bar"></div>
+		<div class="keyboard-menu-buttons">
+			<button id='tab-button' style='width: 30%;'>TAB</button>
+			<button id='open-brace-button' style='width: 11%;'>{</button>
+			<button id='close-brace-button' style='width: 11%;'>}</button>
+			<button id='open-paren-button' style='width: 11%;'>(</button>
+			<button id='close-paren-button' style='width: 11%;'>)</button>
+			<button id='semicolon-button' style='width: 11%;'>;</button>
+			<button id='fullscreen-button' style='width: 12%;'>full</button>
+			<button id='cmd-mode-button' style='width: 50%'>CMD-MODE</button>
+		</div>
 	</div>
 	<div id="virtual-keyboard">
 		<button class="virtual-button" onclick="virtualButtonHandler(this, '0');">0</button>
@@ -151,6 +169,7 @@
 <script type="text/javascript">
 
 let keyboardMenu;
+let statusBar;
 
 window.addEventListener('load', function() {
 	updateWindowSize();
@@ -173,6 +192,8 @@ window.addEventListener('load', function() {
 		}
 	});
 	*/
+
+	statusBar = document.getElementById('status-bar');
 
 	document.getElementById('keyboard-context-menu').addEventListener('pointerdown', function(event) {
 		event.preventDefault();
@@ -213,62 +234,75 @@ window.addEventListener('load', function() {
 
 	cmdButton = document.getElementById('cmd-mode-button');
 
-	//@TODO: Keydown event doesn't work on mobile. Therefore we are forced to split the event handler.
-	// This is stupid though. Document.execCommand('delete'); instead of event.preventDefault()? Really?
-	// I can't believe that this is the only working solution.
-	// Try to find something sane instead.
-	editorCanvas.addEventListener('input', function(event) {
+	//@TODO: Keydown event doesn't work properly on android / chrome on android
+	// This is not a bug. See: https://bugs.chromium.org/p/chromium/issues/detail?id=118639
+	// So here is a work-around for now.
+	editorCanvas.addEventListener('beforeinput', function(event) {
 		switch (event.data) {
 		case 'j':
-			console.log(cmdModeActive);
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				event.preventDefault();
 				moveCursor(
 					'left',
 					wordModeActive ? 'word' : 'character',
 					event.shiftKey || selectModeActive,
 				);
+				statusBar.innerHTML =  `${selectModeActive ? 'Select' : ''}
+				${selectModeActive && wordModeActive ? ' ' : ''}
+				${wordModeActive ? 'Word' : ''}: Left`;
 			}
 			break;
 		case 'l':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				event.preventDefault();
 				moveCursor(
 					'right', 
 					wordModeActive ? 'word' : 'character',
 					event.shiftKey || selectModeActive,
 				);
+				statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
+				${selectModeActive && wordModeActive ? ' ' : ''}
+				${wordModeActive ? 'Word' : ''}: Right`;
 			}
 			break;
 		case 'o':
 			if (cmdModeActive) {
-				document.execCommand('undo');
-				moveCursor('right', 'line', event.shiftKey || selectModeActive);
+				event.preventDefault();
+				moveCursor('right', 'lineboundary', event.shiftKey || selectModeActive);
+				statusBar.innerHTML = (selectModeActive ? 'Select' : '') + ': Line End';
 			}
 			break;
 		case 'u':
 			if (cmdModeActive) {
-				document.execCommand('undo');
-				moveCursor('left', 'line', event.shiftKey || selectModeActive);
+				event.preventDefault();
+				moveCursor('left', 'lineboundary', event.shiftKey || selectModeActive);
+				statusBar.innerHTML = (selectModeActive ? 'Select' : '') + ': Line Start';
 			}
 			break;
 		case 'w':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				event.preventDefault();
 				wordModeActive = !wordModeActive;
+				if (wordModeActive) {
+					statusBar.innerHTML = `${selectModeActive ? 'Select ' : ''}Word`;
+				}
 			}
 			break;
 		case 's':
 			if (cmdModeActive) {
-				document.execCommand('undo');
+				event.preventDefault();
 				selectModeActive = !selectModeActive;
+				if (selectModeActive) {
+					statusBar.innerHTML = `Select ${wordModeActive ? 'Word' : ''}`;
+				}
 			}
 			break;
 		case 'b':
 			if (cmdModeActive) {
-				document.execCommand('delete');
+				event.preventDefault();
 				moveCursor('left', 'word', true);
 				document.execCommand('delete');
+				statusBar.innerHTML = 'Word: Delete Left';
 			}
 			break;
 		case ' ':
@@ -278,6 +312,12 @@ window.addEventListener('load', function() {
 			break;
 		default: 
 			break;
+		}
+
+		if (event.inputType == 'deleteContentBackward' && cmdModeActive) {
+			statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
+				${selectModeActive && wordModeActive ? ' ' : ''}
+				${wordModeActive ? 'Word' : ''}: Delete`;
 		}
 	});
 
@@ -342,6 +382,7 @@ function toggleCmdMode() {
 		wordModeActive = false;
 		selectModeActive = false;
 		cmdButton.className = event.target.className.replace(' cmd-mode-active', '');
+		statusBar.innerHTML = '';
 	}
 }
 
