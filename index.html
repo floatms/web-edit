@@ -247,6 +247,9 @@ window.addEventListener('load', function() {
 					wordModeActive ? 'word' : 'character',
 					event.shiftKey || selectModeActive,
 				);
+				if (!event.shiftKey && !selectModeActive) {
+					window.getSelection().collapseToStart();
+				}
 				statusBar.innerHTML =  `${selectModeActive ? 'Select' : ''}
 				${selectModeActive && wordModeActive ? ' ' : ''}
 				${wordModeActive ? 'Word' : ''}: Left`;
@@ -260,6 +263,9 @@ window.addEventListener('load', function() {
 					wordModeActive ? 'word' : 'character',
 					event.shiftKey || selectModeActive,
 				);
+				if (!event.shiftKey && !selectModeActive) {
+					window.getSelection().collapseToEnd();
+				}
 				statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
 				${selectModeActive && wordModeActive ? ' ' : ''}
 				${wordModeActive ? 'Word' : ''}: Right`;
@@ -313,7 +319,9 @@ window.addEventListener('load', function() {
 		case 'v':
 			if (cmdModeActive) {
 				event.preventDefault();
-				document.execCommand('paste');
+				navigator.clipboard.readText().then(clipText => {
+					window.getSelection().getRangeAt(0).insertNode(document.createTextNode(clipText));
+				});
 				statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
 				${selectModeActive && wordModeActive ? ' ' : ''}
 				${wordModeActive ? 'Word' : ''}: Paste`;
@@ -328,7 +336,7 @@ window.addEventListener('load', function() {
 					document.execCommand('cut');
 					statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
 						${selectModeActive && wordModeActive ? ' ' : ''}
-						${wordModeActive ? 'Word' : ''}: Paste`;
+						${wordModeActive ? 'Word' : ''}: Cut`;
 				}
 			}
 			break;
