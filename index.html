@@ -134,9 +134,9 @@
 </style>
 
 <div id="container">
-	<div id="editor-event-catcher">
-		<div id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></div>	
-	</div>
+	<!-- <div id="editor-event-catcher"></div> -->
+	<div id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></div>
+	<!-- <textarea id="editor-canvas" contenteditable="" spellcheck="false" autocapitalize="off"></textarea> -->
 	<div id="keyboard-context-menu">
 		<div id="status-bar"></div>
 		<div class="keyboard-menu-buttons">
@@ -170,6 +170,9 @@
 
 let keyboardMenu;
 let statusBar;
+let editorCanvas;
+
+let fontSize = 1.1;
 
 window.addEventListener('load', function() {
 	updateWindowSize();
@@ -177,7 +180,7 @@ window.addEventListener('load', function() {
 	keyboardMenu = document.getElementById('keyboard-context-menu');
 	window.addEventListener('resize', resizeHandler);
 
-	let editorCanvas = document.getElementById('editor-canvas');
+	editorCanvas = document.getElementById('editor-canvas');
 	editorCanvas.hasVirtualFocus = false;
 	
 	// let virtualKeyboard = document.getElementById('virtual-keyboard');
@@ -320,7 +323,9 @@ window.addEventListener('load', function() {
 			if (cmdModeActive) {
 				event.preventDefault();
 				navigator.clipboard.readText().then(clipText => {
-					window.getSelection().getRangeAt(0).insertNode(document.createTextNode(clipText));
+					const range = window.getSelection().getRangeAt(0); 
+					range.insertNode(document.createTextNode(clipText));
+					range.collapse(false);
 				});
 				statusBar.innerHTML = `${selectModeActive ? 'Select' : ''}
 				${selectModeActive && wordModeActive ? ' ' : ''}
@@ -351,6 +356,22 @@ window.addEventListener('load', function() {
 		case ' ':
 			if (cmdModeActive) {
 				toggleCmdMode();
+			}
+			break;
+
+		// Auxiliary
+		case '+':
+			if (cmdModeActive) {
+				event.preventDefault();
+				fontSize += 0.1;
+				editorCanvas.style.fontSize = fontSize.toString() + 'em';
+			}
+			break;
+		case '-':
+			if (cmdModeActive) {
+				event.preventDefault();
+				fontSize = Math.max(0.1, fontSize - 0.1);
+				editorCanvas.style.fontSize = fontSize.toString() + 'em';
 			}
 			break;
 		default: 
